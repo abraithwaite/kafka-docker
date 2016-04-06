@@ -1,5 +1,13 @@
 #!/bin/sh
 
-mirror=$(curl --stderr /dev/null https://www.apache.org/dyn/closer.cgi\?as_json\=1 | jq -r '.preferred')
-url="${mirror}kafka/${KAFKA_VERSION}/kafka_${SCALA_VERSION}-${KAFKA_VERSION}.tgz"
-wget -q "${url}" -O "/tmp/kafka_${SCALA_VERSION}-${KAFKA_VERSION}.tgz"
+set -xe
+
+file="kafka_${SCALA_VERSION}-${KAFKA_VERSION}.tgz"
+url="https://www-us.apache.org/dist/kafka/${KAFKA_VERSION}/${file}"
+cd /tmp
+curl -LO "${url}"
+curl -LO "${url}".asc
+gpg --keyserver pgpkeys.mit.edu --recv-key "${PGP_KEYID}"
+gpg --verify ${file}.asc ${file}
+tar xfz ${file} -C /usr/local
+rm /tmp/${file} /tmp/${file}.asc
